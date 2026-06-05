@@ -68,6 +68,17 @@ This package is tagged with the `pi-package` npm keyword so Pi package search/ga
 - npm: https://www.npmjs.com/package/pi-flutter-run
 - repository: https://github.com/Sarrius/pi-flutter-run
 
+## Contributing
+
+Community contributions are welcome.
+
+- Report bugs: https://github.com/Sarrius/pi-flutter-run/issues/new/choose
+- Propose features: https://github.com/Sarrius/pi-flutter-run/issues/new/choose
+- Discuss ideas: https://github.com/Sarrius/pi-flutter-run/discussions
+- Read the contributor guide: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+Please keep pull requests focused and run the local checks before submitting.
+
 ## Development
 
 ```bash

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: npm package
+    url: https://www.npmjs.com/package/pi-flutter-run
+    about: Install and package metadata
+  - name: Pi packages gallery
+    url: https://pi.dev/packages
+    about: Discover public Pi packages
