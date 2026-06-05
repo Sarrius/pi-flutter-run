@@ -1,0 +1,68 @@
+{
+  "name": "pi-flutter-run",
+  "version": "1.0.1",
+  "description": "Flutter run, hot reload, logs, and Dart VM debug cockpit for Pi Agent.",
+  "type": "module",
+  "license": "MIT",
+  "author": "sars267",
+  "homepage": "https://github.com/Sarrius/pi-flutter-run#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sarrius/pi-flutter-run.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sarrius/pi-flutter-run/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "pi-agent",
+    "pi-coding-agent",
+    "agent-pi",
+    "flutter",
+    "flutter-run",
+    "flutter-debug",
+    "flutter-hot-reload",
+    "dart",
+    "dart-vm-service",
+    "debugger",
+    "hot-reload",
+    "developer-tools"
+  ],
+  "files": [
+    "*.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "check": "tsc --noEmit",
+    "pack:check": "npm pack --dry-run",
+    "prepublishOnly": "npm run check"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-ai": "*",
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-ai": "^0.78.0",
+    "@earendil-works/pi-coding-agent": "^0.78.0",
+    "@earendil-works/pi-tui": "^0.78.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^6.0.3"
+  },
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
