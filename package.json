@@ -61,7 +61,7 @@
     "@earendil-works/pi-coding-agent": "^0.78.0",
     "@earendil-works/pi-tui": "^0.78.0",
     "@types/ws": "^8.5.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "pi": {
     "extensions": [
