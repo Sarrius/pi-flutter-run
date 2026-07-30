@@ -13,6 +13,7 @@ export interface FlutterConfig {
 	args: string[];
 	envVars: Record<string, string>;
 	flutterArgs: string[];
+	deviceId?: string;
 }
 
 /**
@@ -27,6 +28,42 @@ export function getDartPackageName(projectDir: string): string | null {
 	return match?.[1] ?? null;
 }
 
+/**
+ * Strip VS Code-style comments (// and /* *‍/) and trailing commas from JSON.
+ * Respects string literals so comments inside strings are preserved.
+ */
+function stripJsonComments(text: string): string {
+	let result = "";
+	let i = 0;
+	while (i < text.length) {
+		// String literal
+		if (text[i] === '"') {
+			result += text[i++];
+			while (i < text.length && text[i] !== '"') {
+				if (text[i] === '\\') { result += text[i++]; }
+				if (i < text.length) { result += text[i++]; }
+			}
+			if (i < text.length) result += text[i++]; // closing quote
+			continue;
+		}
+		// Line comment
+		if (text[i] === '/' && text[i + 1] === '/') {
+			while (i < text.length && text[i] !== '\n') i++;
+			continue;
+		}
+		// Block comment
+		if (text[i] === '/' && text[i + 1] === '*') {
+			i += 2;
+			while (i < text.length && !(text[i] === '*' && text[i + 1] === '/')) i++;
+			i += 2; // skip closing */
+			continue;
+		}
+		result += text[i++];
+	}
+	// Strip trailing commas before ] or }
+	return result.replace(/,\s*([\]\}])/g, "$1");
+}
+
 export function parseLaunchConfigs(projectDir: string): FlutterConfig[] {
 	const launchPath = path.join(projectDir, ".vscode", "launch.json");
 
@@ -34,7 +71,13 @@ export function parseLaunchConfigs(projectDir: string): FlutterConfig[] {
 		return [];
 	}
 
-	const raw = JSON.parse(fs.readFileSync(launchPath, "utf-8"));
+	let raw: any;
+	try {
+		const content = fs.readFileSync(launchPath, "utf-8");
+		raw = JSON.parse(stripJsonComments(content));
+	} catch {
+		return [];
+	}
 	const configs: FlutterConfig[] = [];
 
 	for (const cfg of raw.configurations || []) {
@@ -82,6 +125,7 @@ export function parseLaunchConfigs(projectDir: string): FlutterConfig[] {
 			args: flutterArgs,
 			envVars,
 			flutterArgs,
+			deviceId: cfg.deviceId || undefined,
 		});
 	}
 

@@ -1,6 +1,6 @@
 {
   "name": "pi-flutter-run",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Flutter run, hot reload, logs, and Dart VM debug cockpit for Pi Agent.",
   "type": "module",
   "license": "MIT",

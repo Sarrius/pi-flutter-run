@@ -25,7 +25,7 @@ export interface FlutterDevice {
 
 // Dart VM Service URI: http://IP:PORT/RANDOM/ — no query params, always has trailing slash.
 // The negative lookahead (?!\?) ensures we don't match DevTools URLs with query params.
-const VM_SERVICE_RE = /(https?:\/\/[\w.-]+:\d+\/[A-Za-z0-9_=\-/]+\/)(?!\?)/;
+const VM_SERVICE_RE = /(https?:\/\/(?:[\w.-]+|\[[\da-fA-F:]+\]):\d+\/[A-Za-z0-9_=\-/]+\/?)(?!\?)/;
 const DEVTOOLS_RE =
 	/(?:DevTools|debugger and profiler).*?(https?:\/\/[\w./:\-?=&#]+)/;
 const BUILD_FAILED_RE = /BUILD FAILED/;
@@ -46,7 +46,7 @@ const LAUNCH_FAILED_RES = [
 
 // Flutter 3.38+ outputs "VM Service" (capital S). Detection must be case-insensitive.
 const VM_SERVICE_TEXT_RE =
-	/(?:Dart )?VM [Ss]ervice.*?(https?:\/\/[\w.-]+:\d+\/[A-Za-z0-9_=\-/]+\/)/;
+	/(?:Dart )?VM [Ss]ervice.*?(https?:\/\/(?:[\w.-]+|\[[\da-fA-F:]+\]):\d+\/[A-Za-z0-9_=\-/]+\/?)/;
 
 function isProcessAlive(proc: ChildProcess): boolean {
 	return proc.exitCode === null && proc.signalCode === null && !proc.killed;
@@ -124,6 +124,13 @@ export async function listDevices(): Promise<FlutterDevice[]> {
 			["devices", "--machine"],
 			{ timeout: 30_000 },
 			(err, stdout) => {
+				if (err) {
+					// Distinguish "flutter not found" from other errors
+					if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+						resolve([]);
+						return;
+					}
+				}
 				if (err || !stdout) {
 					// Fallback to non-machine output
 					execFile(

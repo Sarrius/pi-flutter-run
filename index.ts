@@ -303,6 +303,11 @@ export default function (pi: ExtensionAPI) {
 
 			// Select device when multiple devices are available; avoids flutter run hanging on stdin prompt.
 			let deviceId: string | undefined;
+
+			// Honor deviceId from launch.json config if present
+			if (config.deviceId) {
+				deviceId = config.deviceId;
+			} else {
 			const devices = await listDevices();
 			if (devices.length === 0) {
 				ctx.ui.notify(
@@ -370,6 +375,7 @@ export default function (pi: ExtensionAPI) {
 				}
 				deviceId = selectedDevice;
 			}
+			} // end of else (no config.deviceId)
 
 			// Cleanup any previous run
 			cleanup();
@@ -405,6 +411,7 @@ export default function (pi: ExtensionAPI) {
 					currentProcess = null;
 					if (pollInterval) clearInterval(pollInterval);
 					forwardOutput();
+					debugOverlay?.setProcessExited(code);
 					vmService.disconnect();
 					debugOverlay?.addOutputLine(`── Flutter exited (code ${code}) ──`);
 					ctx.ui.notify(`Flutter exited (code ${code})`, "info");

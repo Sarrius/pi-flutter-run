@@ -69,6 +69,8 @@ export class DebugOverlayComponent implements Component {
 	private exceptionMode: "None" | "Unhandled" | "All" = "Unhandled";
 	private errorCount = 0;
 	private lastErrorStartIndex: number | null = null;
+	private processExited = false;
+	private processExitCode: number | null = null;
 
 	// Input mode
 	private mode: "normal" | "addBp" | "removeBp" | "evaluate" | "selectLogs" = "normal";
@@ -173,6 +175,13 @@ export class DebugOverlayComponent implements Component {
 			.slice(this.lastErrorStartIndex, this.lastErrorStartIndex + 80)
 			.map((line) => line.text)
 			.join("\n");
+	}
+
+	setProcessExited(code: number | null): void {
+		this.processExited = true;
+		this.processExitCode = code;
+		this.invalidate();
+		this.controls.onRenderRequested?.();
 	}
 
 	private jumpToLatestError(): void {
@@ -626,7 +635,8 @@ export class DebugOverlayComponent implements Component {
 	render(width: number): string[] {
 		const connected = this.vmService.connected;
 		// While Flutter is building/launching we intentionally bypass cache so the spinner and elapsed time animate.
-		if (connected && this.cachedLines.length > 0 && this.cachedWidth === width) {
+		// Also bypass cache when process has exited to show final state.
+		if (connected && !this.processExited && this.cachedLines.length > 0 && this.cachedWidth === width) {
 			return this.cachedLines;
 		}
 
@@ -639,12 +649,24 @@ export class DebugOverlayComponent implements Component {
 		const elapsedSeconds = Math.max(0, Math.floor((Date.now() - this.createdAt) / 1000));
 		const elapsedText = `${Math.floor(elapsedSeconds / 60)}:${String(elapsedSeconds % 60).padStart(2, "0")}`;
 		const spinner = this.spinnerFrames[Math.floor(Date.now() / 120) % this.spinnerFrames.length];
-		const statusIcon = !connected ? spinner : this.state === "paused" ? "⏸" : "▶";
-		const statusText = !connected
-			? "BUILDING"
-			: this.state === "paused"
-				? "PAUSED"
-				: "RUNNING";
+
+		// 3-state logic: exited > connected > building
+		let statusIcon: string;
+		let statusText: string;
+		if (this.processExited && !connected) {
+			statusIcon = "✕";
+			statusText = `EXITED (${this.processExitCode ?? "?"})`;
+		} else if (!connected) {
+			statusIcon = spinner;
+			statusText = "BUILDING";
+		} else if (this.state === "paused") {
+			statusIcon = "⏸";
+			statusText = "PAUSED";
+		} else {
+			statusIcon = "▶";
+			statusText = "RUNNING";
+		}
+
 		const errorBadge = this.errorCount > 0 ? ` · ⚠ ${this.errorCount}` : "";
 		const modeBadge = this.mode === "selectLogs" ? " · 🧩 SELECT" : "";
 		const title = isCompact
@@ -657,14 +679,8 @@ export class DebugOverlayComponent implements Component {
 				w,
 			),
 		);
-		const primaryActions = this.mode === "selectLogs"
-			? "│  🧩 Select logs: ↑↓ move · Enter start/end · A send · P paste · C copy · Esc cancel"
-			: isCompact
-				? "│  💬 h hide · 🧩 s select · 🤖 a send · ⚠ v error · 📋 c copy · ? help"
-				: "│  💬 h Hide to chat   🧩 s Select logs   🤖 a Send logs   ⚠ v Latest error   📋 c Copy   ? Help";
-		lines.push(truncateToWidth(primaryActions, w));
 
-		if (!connected) {
+		if (!connected && !this.processExited) {
 			const lastMeaningfulOutput = [...this.outputLines]
 				.reverse()
 				.find((line) => !line.text.startsWith("[flutter] machine event:"))?.text;
@@ -698,9 +714,7 @@ export class DebugOverlayComponent implements Component {
 			}
 		}
 
-		if (this.errorCount > 0) {
-			lines.push(truncateToWidth(`│  ⚠ Latest error controls: v=view · y=copy · a=ask agent`, w));
-		}
+
 
 		// Modal mode indicator
 		if (this.mode === "addBp") {
