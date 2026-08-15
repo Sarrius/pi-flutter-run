@@ -35,12 +35,15 @@
     "LICENSE",
     "CONTRIBUTING.md",
     "CODE_OF_CONDUCT.md",
-    "SECURITY.md"
+    "SECURITY.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "check": "tsc --noEmit",
-    "pack:check": "npm pack --dry-run",
-    "prepublishOnly": "npm run check"
+    "test": "node --test test/*.test.ts",
+    "pack:check": "node scripts/check-package.mjs",
+    "release:check": "npm run check && npm test && npm run pack:check",
+    "prepublishOnly": "npm run release:check"
   },
   "engines": {
     "node": ">=22.19.0"
@@ -48,18 +51,15 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "ws": "^8.18.0"
-  },
   "peerDependencies": {
     "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
     "@earendil-works/pi-tui": "*"
   },
   "devDependencies": {
-    "@earendil-works/pi-ai": "^0.78.0",
-    "@earendil-works/pi-coding-agent": "^0.78.0",
-    "@earendil-works/pi-tui": "^0.78.0",
+    "@earendil-works/pi-ai": "^0.84.2",
+    "@earendil-works/pi-coding-agent": "^0.84.2",
+    "@earendil-works/pi-tui": "^0.84.2",
     "@types/ws": "^8.5.0",
     "typescript": "^6.0.3"
   },
@@ -67,5 +67,8 @@
     "extensions": [
       "./index.ts"
     ]
+  },
+  "dependencies": {
+    "ws": "^8.21.3"
   }
 }
